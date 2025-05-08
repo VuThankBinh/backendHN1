@@ -24,14 +24,6 @@ CREATE TABLE chuc_vu (
     ten_chuc_vu NVARCHAR(50) NOT NULL
 );
 
--- Create NhanVien table
-CREATE TABLE nhan_vien (
-    id INT PRIMARY KEY,
-    chuc_vu_id INT NOT NULL,
-    FOREIGN KEY (id) REFERENCES thanh_vien(id),
-    FOREIGN KEY (chuc_vu_id) REFERENCES chuc_vu(id)
-);
-
 -- Add Khoa table if not exists
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'khoa')
 BEGIN
@@ -69,12 +61,16 @@ END
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'bac_si')
 BEGIN
     CREATE TABLE bac_si (
-        id INT PRIMARY KEY,
+        id INT PRIMARY KEY IDENTITY(1,1),
+        tai_khoan_id INT NOT NULL,
+        chuc_vu_id INT NOT NULL,
+        ten_chuc_vu NVARCHAR(50) NOT NULL,
         chuyen_khoa_id INT NOT NULL,
         phong_kham_id INT NOT NULL,
         bang_cap NVARCHAR(255),
         kinh_nghiem INT,
-        FOREIGN KEY (id) REFERENCES nhan_vien(id),
+        FOREIGN KEY (tai_khoan_id) REFERENCES thanh_vien(id),
+        FOREIGN KEY (chuc_vu_id) REFERENCES chuc_vu(id),
         FOREIGN KEY (chuyen_khoa_id) REFERENCES chuyen_khoa(id),
         FOREIGN KEY (phong_kham_id) REFERENCES phong_kham(id)
     );
@@ -116,21 +112,25 @@ ALTER COLUMN ngay_sinh DATE;
 ALTER TABLE benh_nhan
 ALTER COLUMN dan_toc NVARCHAR(50);
 
--- Modify NhanVien table
-ALTER TABLE nhan_vien
-ALTER COLUMN chuc_vu_id INT NOT NULL;
+-- Tạo bảng dich_vu
+CREATE TABLE dich_vu (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    ten_dich_vu NVARCHAR(100) NOT NULL,
+    mo_ta NVARCHAR(255),
+    don_vi_tinh NVARCHAR(50) NOT NULL,
+    don_gia DECIMAL(10,2) NOT NULL,
+    loai_dich_vu NVARCHAR(50) NOT NULL,
+    trang_thai NVARCHAR(50) NOT NULL
+);
 
--- Add BacSi table if not exists
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'bac_si')
-BEGIN
-    CREATE TABLE bac_si (
-        id INT PRIMARY KEY,
-        chuyen_khoa_id INT NOT NULL,
-        phong_kham_id INT NOT NULL,
-        bang_cap NVARCHAR(255),
-        kinh_nghiem INT,
-        FOREIGN KEY (id) REFERENCES nhan_vien(id),
-        FOREIGN KEY (chuyen_khoa_id) REFERENCES chuyen_khoa(id),
-        FOREIGN KEY (phong_kham_id) REFERENCES phong_kham(id)
-    );
-END 
+-- Tạo bảng lich_tiem
+CREATE TABLE lich_tiem (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    bac_si_id INT NOT NULL,
+    loai_vaccine NVARCHAR(100) NOT NULL,
+    ngay_tiem DATE NOT NULL,
+    gio_tiem TIME(7) NOT NULL,
+    trang_thai NVARCHAR(50) NOT NULL,
+    ghi_chu NVARCHAR(255),
+    FOREIGN KEY (bac_si_id) REFERENCES bac_si(id)
+); 

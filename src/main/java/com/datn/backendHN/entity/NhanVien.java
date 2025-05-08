@@ -10,8 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "nhan_vien")
-@PrimaryKeyJoinColumn(name = "id")
-public class NhanVien extends ThanhVien {
+public class NhanVien {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
     @ManyToOne
     @JoinColumn(name = "chuc_vu_id", nullable = false)
     private ChucVu chucVu;

@@ -2,12 +2,10 @@ package com.datn.backendHN.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
 @Entity
 @Table(name = "thuoc")
-@EqualsAndHashCode(callSuper = false)
 public class Thuoc {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

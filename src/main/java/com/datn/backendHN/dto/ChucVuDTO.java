@@ -7,12 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BacSiDTO {
+public class ChucVuDTO {
     private Integer id;
     private String tenChucVu;
-    private Integer chuyenKhoaId;
-    private Integer phongKhamId;
-    private String bangCap;
-    private Integer kinhNghiem;
-    private ThanhVienDTO thanhVien;
-}  
+    private String moTa;
+} 

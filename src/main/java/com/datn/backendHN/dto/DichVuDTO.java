@@ -3,16 +3,16 @@ package com.datn.backendHN.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GoiKhamDTO {
+public class DichVuDTO {
     private Integer id;
-    private String tenGoiKham;
+    private String tenDichVu;
     private String moTa;
-    private BigDecimal giaTien;
+    private String donViTinh;
+    private Double donGia;
+    private String loaiDichVu;
     private String trangThai;
-    private Integer chuyenKhoaId;
 } 
