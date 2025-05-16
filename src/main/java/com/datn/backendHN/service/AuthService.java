@@ -1,12 +1,127 @@
 package com.datn.backendHN.service;
 
-import com.datn.backendHN.dto.auth.*;
-import com.datn.backendHN.entity.ThanhVien;
+import com.datn.backendHN.dto.*;
+import com.datn.backendHN.entity.NguoiDungEntity;
+import com.datn.backendHN.repository.NguoiDungRepository;
+import com.datn.backendHN.security.JwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-public interface AuthService {
-    ThanhVien login(LoginRequest loginRequest);
-    ThanhVien register(RegisterRequest registerRequest);
-    void changePassword(Integer userId, ChangePasswordRequest request);
-    ThanhVien updateProfile(Integer userId, UpdateProfileRequest request);
-    ThanhVien getUserById(Integer userId);
+import java.time.LocalDate;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+    private final NguoiDungRepository nguoiDungRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        validateRegisterRequest(request);
+
+        var nguoiDung = NguoiDungEntity.builder()
+                .email(request.getEmail())
+                .matKhau(passwordEncoder.encode(request.getMatKhau()))
+                .hoTen(request.getHoTen())
+                .soDienThoai(request.getSoDienThoai())
+                .diaChi(request.getDiaChi())
+                .ngaySinh(LocalDate.parse(request.getNgaySinh()))
+                .gioiTinh(request.getGioiTinh())
+                .cccd(request.getCccd())
+                .vaiTro("USER")
+                .daKichHoat(false)
+                .ngayTao(LocalDate.now())
+                .ngayCapNhat(LocalDate.now())
+                .build();
+
+        nguoiDungRepository.save(nguoiDung);
+        return createAuthResponse(nguoiDung);
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getMatKhau()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            throw new RuntimeException("Email hoặc mật khẩu không đúng");
+        }
+
+        var nguoiDung = nguoiDungRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+        return createAuthResponse(nguoiDung);
+    }
+
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var nguoiDung = nguoiDungRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), nguoiDung.getMatKhau())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu mới không khớp");
+        }
+
+        nguoiDung.setMatKhau(passwordEncoder.encode(request.getNewPassword()));
+        nguoiDung.setNgayCapNhat(LocalDate.now());
+        nguoiDungRepository.save(nguoiDung);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        var nguoiDung = nguoiDungRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        String newPassword = generateRandomPassword();
+        nguoiDung.setMatKhau(passwordEncoder.encode(newPassword));
+        nguoiDung.setNgayCapNhat(LocalDate.now());
+        nguoiDungRepository.save(nguoiDung);
+
+        // TODO: Gửi email chứa mật khẩu mới
+        System.out.println("Mật khẩu mới: " + newPassword);
+    }
+
+    private void validateRegisterRequest(RegisterRequest request) {
+        if (nguoiDungRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email đã tồn tại");
+        }
+        if (nguoiDungRepository.existsByCccd(request.getCccd())) {
+            throw new RuntimeException("CCCD đã tồn tại");
+        }
+    }
+
+    private AuthResponse createAuthResponse(NguoiDungEntity nguoiDung) {
+        var jwtToken = jwtService.generateToken(nguoiDung);
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .email(nguoiDung.getEmail())
+                .hoTen(nguoiDung.getHoTen())
+                .vaiTro(nguoiDung.getVaiTro())
+                .build();
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder password = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            int index = (int) (Math.random() * chars.length());
+            password.append(chars.charAt(index));
+        }
+        return password.toString();
+    }
 } 

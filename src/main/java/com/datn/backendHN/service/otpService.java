@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import com.datn.backendHN.repository.ThanhVienRepository;
+import com.datn.backendHN.repository.NguoiDungRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -24,7 +24,7 @@ public class otpService {
     @Autowired
     private emailService emailService;
     @Autowired
-    private ThanhVienRepository thanhVienRepository;
+    private NguoiDungRepository nguoiDungRepository;
     @Autowired
     private StringRedisTemplate redisTemplate;
     public void generateAndSendOtp(String email) {
@@ -61,7 +61,7 @@ public class otpService {
     public void generateAndSendOtpReset(String email) {
         String otp = generateOtp();
         log.info("Generating OTP for email: {}", email + " " + otp);
-        if (!thanhVienRepository.existsByEmail(email)) {
+        if (!nguoiDungRepository.existsByEmail(email)) {
             log.info("email: {}", email + " don't exist");
             throw new RuntimeException("Email don't exist");
         }
