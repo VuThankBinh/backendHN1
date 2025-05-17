@@ -2,6 +2,7 @@ package com.datn.backendHN.service;
 
 import com.datn.backendHN.dto.*;
 import com.datn.backendHN.entity.NguoiDungEntity;
+import com.datn.backendHN.enums.VaiTro;
 import com.datn.backendHN.repository.NguoiDungRepository;
 import com.datn.backendHN.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ public class AuthService {
                 .ngaySinh(LocalDate.parse(request.getNgaySinh()))
                 .gioiTinh(request.getGioiTinh())
                 .cccd(request.getCccd())
-                .vaiTro("USER")
+                .vaiTro(VaiTro.BENH_NHAN.toString())
                 .daKichHoat(false)
                 .ngayTao(LocalDate.now())
                 .ngayCapNhat(LocalDate.now())
@@ -83,17 +84,52 @@ public class AuthService {
     }
 
     @Transactional
-    public void resetPassword(ResetPasswordRequest request) {
+    public void resetPassword(LoginRequest request) {
         var nguoiDung = nguoiDungRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        String newPassword = generateRandomPassword();
+        String newPassword = request.getMatKhau();
         nguoiDung.setMatKhau(passwordEncoder.encode(newPassword));
         nguoiDung.setNgayCapNhat(LocalDate.now());
         nguoiDungRepository.save(nguoiDung);
 
         // TODO: Gửi email chứa mật khẩu mới
         System.out.println("Mật khẩu mới: " + newPassword);
+    }
+
+    @Transactional
+    public void kichHoatTaiKhoan(String email) {
+        var nguoiDung = nguoiDungRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (nguoiDung.getDaKichHoat()) {
+            throw new RuntimeException("Tài khoản đã được kích hoạt");
+        }
+
+        nguoiDung.setDaKichHoat(true);
+        nguoiDung.setNgayCapNhat(LocalDate.now());
+        nguoiDungRepository.save(nguoiDung);
+    }
+
+    public UserInfoResponse layThongTinNguoiDung() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var nguoiDung = nguoiDungRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        return UserInfoResponse.builder()
+                .id(nguoiDung.getIdNguoiDung())
+                .email(nguoiDung.getEmail())
+                .hoTen(nguoiDung.getHoTen())
+                .soDienThoai(nguoiDung.getSoDienThoai())
+                .diaChi(nguoiDung.getDiaChi())
+                .ngaySinh(nguoiDung.getNgaySinh())
+                .gioiTinh(nguoiDung.getGioiTinh())
+                .cccd(nguoiDung.getCccd())
+                .vaiTro(nguoiDung.getVaiTro())
+                .daKichHoat(nguoiDung.getDaKichHoat())
+                .ngayTao(nguoiDung.getNgayTao())
+                .ngayCapNhat(nguoiDung.getNgayCapNhat())
+                .build();
     }
 
     private void validateRegisterRequest(RegisterRequest request) {

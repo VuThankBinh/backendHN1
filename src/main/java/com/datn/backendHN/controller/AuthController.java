@@ -38,9 +38,22 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(
-            @Valid @RequestBody ResetPasswordRequest request
+            @Valid @RequestBody LoginRequest request
     ) {
         authService.resetPassword(request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/kich-hoat/{email}")
+    public ResponseEntity<Void> kichHoatTaiKhoan(
+            @PathVariable String email
+    ) {
+        authService.kichHoatTaiKhoan(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponse> layThongTinNguoiDung() {
+        return ResponseEntity.ok(authService.layThongTinNguoiDung());
     }
 } 

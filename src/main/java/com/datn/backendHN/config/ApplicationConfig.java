@@ -1,5 +1,6 @@
 package com.datn.backendHN.config;
 
+import com.datn.backendHN.entity.NguoiDungEntity;
 import com.datn.backendHN.repository.NguoiDungRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

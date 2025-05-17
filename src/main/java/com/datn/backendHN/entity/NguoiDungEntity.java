@@ -19,8 +19,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+import com.datn.backendHN.enums.VaiTro;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+
 @Entity
-@Table(name = "NGUOI_DUNG")
+@Table(name = "nguoi_dung")
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,18 +32,19 @@ import java.util.List;
 public class NguoiDungEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_nguoi_dung;
+    @Column(name = "id_nguoi_dung")
+    private Integer idNguoiDung;
     
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", unique = true)
     private String email;
     
-    @Column(name = "mat_khau", nullable = false)
+    @Column(name = "mat_khau")
     private String matKhau;
     
-    @Column(name = "ho_ten", nullable = false)
+    @Column(name = "ho_ten")
     private String hoTen;
     
-    @Column(name = "so_dien_thoai", nullable = false)
+    @Column(name = "so_dien_thoai")
     private String soDienThoai;
     
     @Column(name = "dia_chi")
@@ -51,13 +56,13 @@ public class NguoiDungEntity implements UserDetails {
     @Column(name = "gioi_tinh")
     private String gioiTinh;
     
-    @Column(name = "cccd", nullable = false, unique = true)
+    @Column(name = "cccd", unique = true)
     private String cccd;
     
-    @Column(name = "vai_tro", nullable = false)
+    @Column(name = "vai_tro")
     private String vaiTro;
     
-    @Column(name = "da_kich_hoat", nullable = false)
+    @Column(name = "da_kich_hoat")
     private Boolean daKichHoat;
     
     @Column(name = "ngay_tao")
@@ -80,24 +85,7 @@ public class NguoiDungEntity implements UserDetails {
     public String getUsername() {
         return email;
     }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return daKichHoat;
-    }
+    
+    
+   
 }
