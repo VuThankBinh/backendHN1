@@ -66,8 +66,7 @@ public class AuthService {
 
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var nguoiDung = nguoiDungRepository.findByEmail(authentication.getName())
+        var nguoiDung = nguoiDungRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
         if (!passwordEncoder.matches(request.getOldPassword(), nguoiDung.getMatKhau())) {
@@ -115,6 +114,36 @@ public class AuthService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var nguoiDung = nguoiDungRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        return UserInfoResponse.builder()
+                .id(nguoiDung.getIdNguoiDung())
+                .email(nguoiDung.getEmail())
+                .hoTen(nguoiDung.getHoTen())
+                .soDienThoai(nguoiDung.getSoDienThoai())
+                .diaChi(nguoiDung.getDiaChi())
+                .ngaySinh(nguoiDung.getNgaySinh())
+                .gioiTinh(nguoiDung.getGioiTinh())
+                .cccd(nguoiDung.getCccd())
+                .vaiTro(nguoiDung.getVaiTro())
+                .daKichHoat(nguoiDung.getDaKichHoat())
+                .ngayTao(nguoiDung.getNgayTao())
+                .ngayCapNhat(nguoiDung.getNgayCapNhat())
+                .build();
+    }
+
+    @Transactional
+    public UserInfoResponse capNhatThongTin(UpdateUserRequest request) {
+        var nguoiDung = nguoiDungRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        nguoiDung.setHoTen(request.getHoTen());
+        nguoiDung.setSoDienThoai(request.getSoDienThoai());
+        nguoiDung.setDiaChi(request.getDiaChi());
+        nguoiDung.setNgaySinh(LocalDate.parse(request.getNgaySinh()));
+        nguoiDung.setGioiTinh(request.getGioiTinh());
+        nguoiDung.setNgayCapNhat(LocalDate.now());
+
+        nguoiDungRepository.save(nguoiDung);
 
         return UserInfoResponse.builder()
                 .id(nguoiDung.getIdNguoiDung())
