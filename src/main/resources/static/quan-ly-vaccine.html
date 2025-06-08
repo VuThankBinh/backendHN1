@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý vaccine</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="img/Logo medical booking.png" alt="Logo">
+    </div>
+    <div class="section">
+      <h6>QUẢN LÝ</h6>
+      <a href="admin.html"><i class="fas fa-briefcase-medical"></i>Quản lý gói khám</a>
+      <a href="quan-ly-bac-si.html"><i class="fas fa-user-md"></i>Quản lý bác sĩ</a>
+      <a href="quan-ly-vaccine.html" class="active"><i class="fas fa-syringe"></i>Quản lý vaccine</a>
+      <a href="quan-ly-lich-tiem.html"><i class="fas fa-calendar-alt"></i>Quản lý lịch tiêm</a>
+      <a href="phieu-kham-chua-duyet.html"><i class="fas fa-file-medical"></i>Phiếu khám chưa duyệt</a>
+      <a href="phieu-kham-da-duyet.html"><i class="fas fa-file-invoice"></i>Phiếu khám đã duyệt</a>
+    </div>
+    <div class="section">
+      <h6>LỄ TÂN</h6>
+      <a href="thong-tin-dat-kham.html"><i class="fas fa-calendar-check"></i>Thông tin đặt khám</a>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="user-info">
+        <div>
+          <div><strong>Admin</strong></div>
+          <div class="text-muted">admin@gmail.com</div>
+        </div>
+        <div class="dropdown">
+          <img src="img/nnth7mu.png" alt="User Avatar" class="dropdown-toggle" data-bs-toggle="dropdown">
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4><i class="fas fa-syringe me-2"></i>Quản lý vaccine</h4>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addVaccineModal">
+          <i class="fas fa-plus"></i> Thêm vaccine
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Tên vaccine</th>
+              <th>Nhà sản xuất</th>
+              <th>Số mũi tiêm</th>
+              <th>Khoảng cách giữa các mũi</th>
+              <th>Chống chỉ định</th>
+              <th>Tác dụng phụ</th>
+              <th>Trạng thái</th>
+              <th>Chức năng</th>
+            </tr>
+          </thead>
+          <tbody id="vaccineTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm/Sửa vaccine -->
+  <div class="modal fade" id="addVaccineModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm vaccine mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="vaccineForm">
+            <input type="hidden" id="id">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Tên vaccine</label>
+                <input type="text" class="form-control" id="name" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nhà sản xuất</label>
+                <input type="text" class="form-control" id="manufacturer" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Số mũi tiêm</label>
+                <input type="number" class="form-control" id="numberOfDoses" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Khoảng cách giữa các mũi (ngày)</label>
+                <input type="number" class="form-control" id="intervalBetweenDoses" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mô tả</label>
+              <textarea class="form-control" id="description" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Chống chỉ định</label>
+              <textarea class="form-control" id="contraindications" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tác dụng phụ</label>
+              <textarea class="form-control" id="sideEffects" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isActive" checked>
+                <label class="form-check-label">Trạng thái hoạt động</label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" id="saveVaccine">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Kiểm tra đăng nhập
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      
+      if (!token || userInfo.vaiTro !== 'QUAN_TRI') {
+        window.location.href = 'dangnhap.html';
+      }
+    }
+
+    // Load danh sách vaccine
+    async function loadVaccines() {
+        try {
+            const response = await fetch('http://localhost:8080/api/vaccines', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi tải danh sách vaccine!');
+                }
+            }
+
+            const data = await response.json();
+            const tableBody = document.getElementById('vaccineTableBody');
+            tableBody.innerHTML = data.map(vaccine => `
+                <tr>
+                    <td>${vaccine.id || ''}</td>
+                    <td>${vaccine.name || ''}</td>
+                    <td>${vaccine.manufacturer || ''}</td>
+                    <td>${vaccine.numberOfDoses || ''}</td>
+                    <td>${vaccine.intervalBetweenDoses || ''} ngày</td>
+                    <td>${vaccine.contraindications || ''}</td>
+                    <td>${vaccine.sideEffects || ''}</td>
+                    <td>${vaccine.isActive ? 'Hoạt động' : 'Không hoạt động'}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm me-1" onclick="editVaccine(${vaccine.id})">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteVaccine(${vaccine.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi tải danh sách vaccine!');
+            }
+        }
+    }
+
+    // Thêm/Sửa vaccine
+    async function saveVaccine() {
+        const formData = {
+            id: document.getElementById('id').value || null,
+            name: document.getElementById('name').value.trim(),
+            manufacturer: document.getElementById('manufacturer').value.trim(),
+            numberOfDoses: parseInt(document.getElementById('numberOfDoses').value) || 0,
+            intervalBetweenDoses: parseInt(document.getElementById('intervalBetweenDoses').value) || 0,
+            description: document.getElementById('description').value.trim(),
+            contraindications: document.getElementById('contraindications').value.trim(),
+            sideEffects: document.getElementById('sideEffects').value.trim(),
+            isActive: document.getElementById('isActive').checked
+        };
+
+        // Kiểm tra dữ liệu
+        if (!formData.name) {
+            alert('Vui lòng nhập tên vaccine!');
+            return;
+        }
+        if (!formData.manufacturer) {
+            alert('Vui lòng nhập nhà sản xuất!');
+            return;
+        }
+        if (formData.numberOfDoses < 1) {
+            alert('Số mũi tiêm phải lớn hơn 0!');
+            return;
+        }
+        if (formData.intervalBetweenDoses < 0) {
+            alert('Khoảng cách giữa các mũi không hợp lệ!');
+            return;
+        }
+
+        try {
+            const url = formData.id ? 
+                `http://localhost:8080/api/vaccines/${formData.id}` : 
+                'http://localhost:8080/api/vaccines';
+
+            const response = await fetch(url, {
+                method: formData.id ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else if (response.status === 403) {
+                    throw new Error('Bạn không có quyền thực hiện thao tác này!');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi lưu vaccine!');
+                }
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('addVaccineModal')).hide();
+            loadVaccines();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi lưu vaccine!');
+            }
+        }
+    }
+
+    // Xóa vaccine
+    async function deleteVaccine(id) {
+        if (!confirm('Bạn có chắc chắn muốn xóa vaccine này?')) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/vaccines/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Không tìm thấy vaccine cần xóa!');
+                } else if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else if (response.status === 400) {
+                    throw new Error('Không thể xóa vaccine này! Có thể vaccine đang được sử dụng.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi xóa vaccine!');
+                }
+            }
+
+            alert('Xóa vaccine thành công!');
+            loadVaccines();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi xóa vaccine!');
+            }
+        }
+    }
+
+    // Sửa vaccine
+    async function editVaccine(id) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/vaccines/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Không tìm thấy vaccine!');
+                } else if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi tải thông tin vaccine!');
+                }
+            }
+
+            const vaccine = await response.json();
+
+            document.getElementById('id').value = vaccine.id;
+            document.getElementById('name').value = vaccine.name || '';
+            document.getElementById('manufacturer').value = vaccine.manufacturer || '';
+            document.getElementById('numberOfDoses').value = vaccine.numberOfDoses || 0;
+            document.getElementById('intervalBetweenDoses').value = vaccine.intervalBetweenDoses || 0;
+            document.getElementById('description').value = vaccine.description || '';
+            document.getElementById('contraindications').value = vaccine.contraindications || '';
+            document.getElementById('sideEffects').value = vaccine.sideEffects || '';
+            document.getElementById('isActive').checked = vaccine.isActive;
+
+            new bootstrap.Modal(document.getElementById('addVaccineModal')).show();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi tải thông tin vaccine!');
+            }
+        }
+    }
+
+    // Event Listeners
+    document.getElementById('saveVaccine').addEventListener('click', saveVaccine);
+    document.getElementById('addVaccineModal').addEventListener('hidden.bs.modal', function () {
+      document.getElementById('vaccineForm').reset();
+      document.getElementById('id').value = '';
+    });
+
+    // Khởi tạo
+    checkAuth();
+    loadVaccines();
+  </script>
+</body>
+</html> 

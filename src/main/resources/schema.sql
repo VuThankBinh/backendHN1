@@ -102,7 +102,7 @@ END
 
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_thanh_vien_ten_dang_nhap')
 BEGIN
-    ALTER TABLE thanh_vien ADD CONSTRAINT UQ_thanh_vien_ten_dang_nhap UNIQUE (ten_dang_nhap);
+    ALTER TABLE thanh_vien ADD CONSTRAINT UQ_thanh_vien_ten_dang_nhap UNIQUE (ten_dang_nhp);
 END
 
 -- Modify BenhNhan table
@@ -133,4 +133,69 @@ CREATE TABLE lich_tiem (
     trang_thai NVARCHAR(50) NOT NULL,
     ghi_chu NVARCHAR(255),
     FOREIGN KEY (bac_si_id) REFERENCES bac_si(id)
-); 
+);
+
+-- Tạo bảng ho_so_benh_nhan
+CREATE TABLE ho_so_benh_nhan (
+    ma_ho_so INT PRIMARY KEY IDENTITY(1,1),
+    nguoi_dung_id INT,
+    ho_ten NVARCHAR(100) NOT NULL,
+    ngay_sinh NVARCHAR(10),
+    gioi_tinh NVARCHAR(10),
+    ma_dinh_danh NVARCHAR(20),
+    so_dien_thoai NVARCHAR(15),
+    nghe_nghiep NVARCHAR(50),
+    email NVARCHAR(100),
+    noi_thuong_tru NVARCHAR(255),
+    ngay_cap NVARCHAR(255),
+    FOREIGN KEY (nguoi_dung_id) REFERENCES thanh_vien(id)
+);
+
+-- Tạo bảng vaccine
+CREATE TABLE vaccine (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    manufacturer NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
+    number_of_doses INT NOT NULL,
+    interval_between_doses INT NOT NULL,
+    contraindications NVARCHAR(MAX) NOT NULL,
+    side_effects NVARCHAR(MAX) NOT NULL,
+    is_active BIT NOT NULL DEFAULT 1
+);
+
+-- Tạo bảng lịch tiêm chủng
+CREATE TABLE vaccination_calendar (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    vaccine_id BIGINT NOT NULL,
+    vaccination_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    max_patients INT NOT NULL,
+    current_patients INT NOT NULL DEFAULT 0,
+    notes NVARCHAR(MAX),
+    is_active BIT NOT NULL DEFAULT 1,
+    FOREIGN KEY (vaccine_id) REFERENCES vaccine(id),
+    CONSTRAINT unique_vaccine_date UNIQUE (vaccine_id, vaccination_date, is_active)
+);
+
+-- Tạo bảng đăng ký tiêm chủng
+CREATE TABLE vaccination_registration (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    calendar_id BIGINT NOT NULL,
+    ma_ho_so INT NOT NULL,
+    registration_time DATETIME NOT NULL DEFAULT GETDATE(),
+    status NVARCHAR(50) NOT NULL, -- PENDING, CONFIRMED, CANCELLED, COMPLETED
+    notes NVARCHAR(MAX),
+    is_active BIT NOT NULL DEFAULT 1,
+    FOREIGN KEY (calendar_id) REFERENCES vaccination_calendar(id),
+    FOREIGN KEY (ma_ho_so) REFERENCES ho_so_benh_nhan(ma_ho_so)
+);
+
+-- Tạo index cho các trường thường xuyên tìm kiếm
+CREATE INDEX idx_vaccine_name ON vaccine(name);
+CREATE INDEX idx_vaccination_calendar_date ON vaccination_calendar(vaccination_date);
+CREATE INDEX idx_vaccination_calendar_vaccine ON vaccination_calendar(vaccine_id);
+CREATE INDEX idx_vaccination_registration_calendar ON vaccination_registration(calendar_id);
+CREATE INDEX idx_vaccination_registration_ma_ho_so ON vaccination_registration(ma_ho_so);
+CREATE INDEX idx_vaccination_registration_status ON vaccination_registration(status); 

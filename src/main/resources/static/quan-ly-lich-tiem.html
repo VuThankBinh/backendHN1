@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý lịch tiêm vaccine</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="img/Logo medical booking.png" alt="Logo">
+    </div>
+    <div class="section">
+      <h6>QUẢN LÝ</h6>
+      <a href="admin.html"><i class="fas fa-briefcase-medical"></i>Quản lý gói khám</a>
+      <a href="quan-ly-bac-si.html"><i class="fas fa-user-md"></i>Quản lý bác sĩ</a>
+      <a href="quan-ly-vaccine.html"><i class="fas fa-syringe"></i>Quản lý vaccine</a>
+      <a href="quan-ly-lich-tiem.html" class="active"><i class="fas fa-calendar-alt"></i>Quản lý lịch tiêm</a>
+      <a href="phieu-kham-chua-duyet.html"><i class="fas fa-file-medical"></i>Phiếu khám chưa duyệt</a>
+      <a href="phieu-kham-da-duyet.html"><i class="fas fa-file-invoice"></i>Phiếu khám đã duyệt</a>
+    </div>
+    <div class="section">
+      <h6>LỄ TÂN</h6>
+      <a href="thong-tin-dat-kham.html"><i class="fas fa-calendar-check"></i>Thông tin đặt khám</a>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="user-info">
+        <div>
+          <div><strong>Admin</strong></div>
+          <div class="text-muted">admin@gmail.com</div>
+        </div>
+        <div class="dropdown">
+          <img src="img/nnth7mu.png" alt="User Avatar" class="dropdown-toggle" data-bs-toggle="dropdown">
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4><i class="fas fa-calendar-alt me-2"></i>Quản lý lịch tiêm vaccine</h4>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCalendarModal">
+          <i class="fas fa-plus"></i> Thêm lịch tiêm
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Vaccine</th>
+              <th>Ngày tiêm</th>
+              <th>Số lượng tối đa</th>
+              <th>Đã đăng ký</th>
+              <th>Trạng thái</th>
+              <th>Chức năng</th>
+            </tr>
+          </thead>
+          <tbody id="calendarTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm/Sửa lịch tiêm -->
+  <div class="modal fade" id="addCalendarModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm lịch tiêm mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="calendarForm">
+            <input type="hidden" id="id">
+            <div class="mb-3">
+              <label class="form-label">Vaccine</label>
+              <select class="form-select" id="vaccineId" required>
+                <option value="">Chọn vaccine</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ngày tiêm</label>
+              <input type="datetime-local" class="form-control" id="vaccinationDate" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Số lượng tối đa</label>
+              <input type="number" class="form-control" id="maxPatients" required>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isActive" checked>
+                <label class="form-check-label">Trạng thái hoạt động</label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" id="saveCalendar">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Kiểm tra đăng nhập
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      
+      if (!token || userInfo.vaiTro !== 'QUAN_TRI') {
+        window.location.href = 'dangnhap.html';
+      }
+    }
+
+    // Load danh sách vaccine cho select
+    async function loadVaccines() {
+        try {
+            const response = await fetch('http://localhost:8080/api/vaccines', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Có lỗi xảy ra khi tải danh sách vaccine!');
+            }
+
+            const vaccines = await response.json();
+            const select = document.getElementById('vaccineId');
+            select.innerHTML = '<option value="">Chọn vaccine</option>' +
+                vaccines.map(vaccine => `
+                    <option value="${vaccine.id}">${vaccine.name}</option>
+                `).join('');
+        } catch (error) {
+            console.error('Lỗi:', error);
+            alert(error.message);
+        }
+    }
+
+    // Load danh sách lịch tiêm
+    async function loadCalendars() {
+        try {
+            const response = await fetch('http://localhost:8080/api/calendars', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi tải danh sách lịch tiêm!');
+                }
+            }
+
+            const data = await response.json();
+            const tableBody = document.getElementById('calendarTableBody');
+            tableBody.innerHTML = data.map(calendar => `
+                <tr>
+                    <td>${calendar.id || ''}</td>
+                    <td>${calendar.vaccine ? calendar.vaccine.name : ''}</td>
+                    <td>${new Date(calendar.vaccinationDate).toLocaleString('vi-VN')}</td>
+                    <td>${calendar.maxPatients || 0}</td>
+                    <td>${calendar.currentPatients || 0}</td>
+                    <td>${calendar.isActive ? 'Hoạt động' : 'Không hoạt động'}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm me-1" onclick="editCalendar(${calendar.id})">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCalendar(${calendar.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi tải danh sách lịch tiêm!');
+            }
+        }
+    }
+
+    // Thêm/Sửa lịch tiêm
+    async function saveCalendar() {
+        const formData = {
+            id: document.getElementById('id').value || null,
+            vaccine: {
+                id: document.getElementById('vaccineId').value
+            },
+            vaccinationDate: document.getElementById('vaccinationDate').value,
+            maxPatients: parseInt(document.getElementById('maxPatients').value) || 0,
+            isActive: document.getElementById('isActive').checked
+        };
+
+        // Kiểm tra dữ liệu
+        if (!formData.vaccine.id) {
+            alert('Vui lòng chọn vaccine!');
+            return;
+        }
+        if (!formData.vaccinationDate) {
+            alert('Vui lòng chọn ngày tiêm!');
+            return;
+        }
+        if (formData.maxPatients < 1) {
+            alert('Số lượng tối đa phải lớn hơn 0!');
+            return;
+        }
+
+        try {
+            const url = formData.id ? 
+                `http://localhost:8080/api/calendars/${formData.id}` : 
+                'http://localhost:8080/api/calendars';
+
+            const response = await fetch(url, {
+                method: formData.id ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else if (response.status === 403) {
+                    throw new Error('Bạn không có quyền thực hiện thao tác này!');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi lưu lịch tiêm!');
+                }
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('addCalendarModal')).hide();
+            loadCalendars();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi lưu lịch tiêm!');
+            }
+        }
+    }
+
+    // Xóa lịch tiêm
+    async function deleteCalendar(id) {
+        if (!confirm('Bạn có chắc chắn muốn xóa lịch tiêm này?')) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/calendars/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Không tìm thấy lịch tiêm cần xóa!');
+                } else if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else if (response.status === 400) {
+                    throw new Error('Không thể xóa lịch tiêm này! Có thể đã có người đăng ký.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi xóa lịch tiêm!');
+                }
+            }
+
+            alert('Xóa lịch tiêm thành công!');
+            loadCalendars();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi xóa lịch tiêm!');
+            }
+        }
+    }
+
+    // Sửa lịch tiêm
+    async function editCalendar(id) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/calendars/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Không tìm thấy lịch tiêm!');
+                } else if (response.status === 401) {
+                    throw new Error('Phiên đăng nhập đã hết hạn! Vui lòng đăng nhập lại.');
+                } else {
+                    throw new Error('Có lỗi xảy ra khi tải thông tin lịch tiêm!');
+                }
+            }
+
+            const calendar = await response.json();
+
+            document.getElementById('id').value = calendar.id;
+            document.getElementById('vaccineId').value = calendar.vaccine ? calendar.vaccine.id : '';
+            document.getElementById('vaccinationDate').value = calendar.vaccinationDate ? 
+                calendar.vaccinationDate.slice(0, 16) : '';
+            document.getElementById('maxPatients').value = calendar.maxPatients || 0;
+            document.getElementById('isActive').checked = calendar.isActive;
+
+            new bootstrap.Modal(document.getElementById('addCalendarModal')).show();
+        } catch (error) {
+            console.error('Lỗi:', error);
+            if (error.message.includes('Phiên đăng nhập đã hết hạn')) {
+                alert(error.message);
+                window.location.href = 'dangnhap.html';
+            } else {
+                alert(error.message || 'Có lỗi xảy ra khi tải thông tin lịch tiêm!');
+            }
+        }
+    }
+
+    // Event Listeners
+    document.getElementById('saveCalendar').addEventListener('click', saveCalendar);
+    document.getElementById('addCalendarModal').addEventListener('hidden.bs.modal', function () {
+      document.getElementById('calendarForm').reset();
+      document.getElementById('id').value = '';
+    });
+
+    // Khởi tạo
+    checkAuth();
+    loadVaccines();
+    loadCalendars();
+  </script>
+</body>
+</html> 
