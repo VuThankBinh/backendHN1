@@ -35,31 +35,31 @@ public class NguoiDungEntity implements UserDetails {
     @Column(name = "id_nguoi_dung")
     private Integer idNguoiDung;
     
-    @Column(name = "email", unique = true)
+    @Column(name = "email", length = 100, nullable = false)
     private String email;
     
-    @Column(name = "mat_khau")
+    @Column(name = "mat_khau", length = 255, nullable = false)
     private String matKhau;
     
-    @Column(name = "ho_ten")
+    @Column(name = "ho_ten", length = 100, nullable = false)
     private String hoTen;
     
-    @Column(name = "so_dien_thoai")
+    @Column(name = "so_dien_thoai", length = 15, nullable = false)
     private String soDienThoai;
     
-    @Column(name = "dia_chi")
+    @Column(name = "dia_chi", length = 255)
     private String diaChi;
     
     @Column(name = "ngay_sinh")
     private LocalDate ngaySinh;
     
-    @Column(name = "gioi_tinh")
+    @Column(name = "gioi_tinh", length = 10)
     private String gioiTinh;
     
-    @Column(name = "cccd", unique = true)
+    @Column(name = "cccd", length = 20)
     private String cccd;
     
-    @Column(name = "vai_tro")
+    @Column(name = "vai_tro", length = 20, nullable = false)
     private String vaiTro;
     
     @Column(name = "da_kich_hoat")
@@ -70,6 +70,9 @@ public class NguoiDungEntity implements UserDetails {
     
     @Column(name = "ngay_cap_nhat")
     private LocalDate ngayCapNhat;
+
+    @Column(name = "avatar", columnDefinition = "nvarchar(MAX)")
+    private String avatar;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -32,4 +32,6 @@ public class UpdateUserRequest {
     
     @NotBlank(message = "Giới tính không được để trống")
     private String gioiTinh;
+
+    private String avatar;
 } 

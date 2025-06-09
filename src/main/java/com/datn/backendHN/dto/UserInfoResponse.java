@@ -24,4 +24,5 @@ public class UserInfoResponse {
     private Boolean daKichHoat;
     private LocalDate ngayTao;
     private LocalDate ngayCapNhat;
+    private String avatar;
 } 

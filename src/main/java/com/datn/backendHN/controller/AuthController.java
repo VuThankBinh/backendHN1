@@ -5,7 +5,6 @@ import com.datn.backendHN.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,7 +29,6 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordRequest request
     ) {

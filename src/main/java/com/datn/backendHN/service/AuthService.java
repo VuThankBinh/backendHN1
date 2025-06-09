@@ -128,6 +128,7 @@ public class AuthService {
                 .daKichHoat(nguoiDung.getDaKichHoat())
                 .ngayTao(nguoiDung.getNgayTao())
                 .ngayCapNhat(nguoiDung.getNgayCapNhat())
+                .avatar(nguoiDung.getAvatar())
                 .build();
     }
 
@@ -141,6 +142,7 @@ public class AuthService {
         nguoiDung.setDiaChi(request.getDiaChi());
         nguoiDung.setNgaySinh(LocalDate.parse(request.getNgaySinh()));
         nguoiDung.setGioiTinh(request.getGioiTinh());
+        nguoiDung.setAvatar(request.getAvatar());
         nguoiDung.setNgayCapNhat(LocalDate.now());
 
         nguoiDungRepository.save(nguoiDung);
@@ -158,6 +160,7 @@ public class AuthService {
                 .daKichHoat(nguoiDung.getDaKichHoat())
                 .ngayTao(nguoiDung.getNgayTao())
                 .ngayCapNhat(nguoiDung.getNgayCapNhat())
+                .avatar(nguoiDung.getAvatar())
                 .build();
     }
 
